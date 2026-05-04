@@ -10,6 +10,10 @@ export interface ProyectoTesis {
   fecha_inicio: string;          // Formato: "YYYY-MM-DD"
   fecha_fin?: string;            // Opcional: puede estar aún en progreso
   repositorio_github?: string;   // Ej: "https://github.com/usuario/repo"
+  // =====================================================================
+  // 📦 [STORAGE-01] NUEVO CAMPO PARA ALMACENAR LA URL DEL PDF
+  // =====================================================================
+  documento_url?: string;
   estado: EstadoProyecto;
   created_at: string;
 }

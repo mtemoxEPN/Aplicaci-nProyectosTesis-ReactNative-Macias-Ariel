@@ -1,5 +1,6 @@
 import { supabase } from "@shared/api/supabase";
 import type { CreateProyectoDto, ProyectoTesis, UpdateProyectoDto } from "../model/types";
+import { Platform } from 'react-native';
 
 const TABLE = "proyectos_tesis";
 
@@ -53,4 +54,47 @@ export const proyectoApi = {
       throw new Error(error.message);
     }
   },
+
+  // =====================================================================
+  // 📦 [STORAGE-02] FUNCIÓN EXCLUSIVA PARA SUBIR EL PDF A SUPABASE
+  // =====================================================================
+  async uploadDocument(uri: string, fileName: string): Promise<string> {
+    try {
+      // =====================================================================
+      // 🐛 [FIX-05] SANITIZAR EL NOMBRE DEL ARCHIVO (Quitar tildes, espacios y ñ)
+      // =====================================================================
+      const nombreSeguro = fileName
+        .normalize("NFD") // Descompone las letras de sus tildes (ej. Ó -> O + ´)
+        .replace(/[\u0300-\u036f]/g, "") // Elimina las tildes descompuestas
+        .replace(/[^a-zA-Z0-9.\-_]/g, "_"); // Reemplaza espacios y cualquier símbolo raro por un guion bajo "_"
+
+      // Ahora usamos el "nombreSeguro" en lugar del "fileName" original
+      const uniqueFileName = `${Date.now()}-${nombreSeguro}`;
+      const filePath = `tesis/${uniqueFileName}`;
+
+      const formData = new FormData();
+      
+      formData.append('file', {
+        uri: Platform.OS === 'android' ? uri : uri.replace('file://', ''),
+        name: uniqueFileName,
+        type: 'application/pdf',
+      } as any);
+
+      const { data, error } = await supabase.storage
+        .from('documentos')
+        .upload(filePath, formData);
+
+      if (error) throw new Error(error.message);
+
+      const { data: publicData } = supabase.storage
+        .from('documentos')
+        .getPublicUrl(filePath);
+
+      return publicData.publicUrl;
+    } catch (error: any) {
+      console.error("[proyectoApi.uploadDocument]", error.message);
+      throw new Error("No se pudo subir el documento: " + error.message);
+    }
+  },
+
 };

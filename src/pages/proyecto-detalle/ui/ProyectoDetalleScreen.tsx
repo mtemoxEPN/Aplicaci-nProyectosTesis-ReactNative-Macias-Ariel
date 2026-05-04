@@ -4,6 +4,7 @@ import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { proyectoApi } from '@entities/proyecto-tesis/api/proyectoApi';
 import type { ProyectoTesis } from '@entities/proyecto-tesis/model/types';
 import { Colors, getEstadoColor } from '@shared/ui/Colors';
+import { Ionicons } from '@expo/vector-icons';
 
 export function ProyectoDetalleScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -36,6 +37,13 @@ export function ProyectoDetalleScreen() {
     }
   };
 
+  // =====================================================================
+  // 📦 [STORAGE-09] FUNCIÓN PARA ABRIR EL PDF EN EL NAVEGADOR
+  // =====================================================================
+  const abrirPDF = () => {
+    if (proyecto?.documento_url) Linking.openURL(proyecto.documento_url);
+  };
+
   if (cargando) {
     return <View style={styles.centro}><ActivityIndicator size="large" color={Colors.primary.main} /></View>;
   }
@@ -43,6 +51,8 @@ export function ProyectoDetalleScreen() {
   if (error || !proyecto) {
     return <View style={styles.centro}><Text style={styles.error}>{error || "Proyecto no encontrado"}</Text></View>;
   }
+
+
 
   return (
     <ScrollView style={styles.contenedor} contentContainerStyle={styles.scroll}>
@@ -70,6 +80,16 @@ export function ProyectoDetalleScreen() {
         {proyecto.repositorio_github && (
           <TouchableOpacity style={styles.botonGit} onPress={abrirRepo}>
             <Text style={styles.botonGitTexto}>Ver Repositorio en GitHub</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* =====================================================================
+            📦 [STORAGE-10] UI DEL BOTÓN PARA ABRIR EL DOCUMENTO PDF
+            ===================================================================== */}
+        {proyecto.documento_url && (
+          <TouchableOpacity style={styles.botonPdf} onPress={abrirPDF}>
+            <Ionicons name="document-text" size={20} color={Colors.white} />
+            <Text style={styles.botonGitTexto}>Ver Documento PDF</Text>
           </TouchableOpacity>
         )}
 
@@ -106,4 +126,5 @@ const styles = StyleSheet.create({
   botonGitTexto: { color: Colors.white, fontSize: 16, fontWeight: '700' },
   botonEditar: { marginTop: 12, backgroundColor: Colors.primary.light + '15', paddingVertical: 14, borderRadius: 10, alignItems: 'center', borderWidth: 1, borderColor: Colors.primary.main },
   botonEditarTexto: { color: Colors.primary.main, fontSize: 16, fontWeight: '700' },
+  botonPdf: { flexDirection: 'row', gap: 8, marginTop: 12, backgroundColor: '#d32f2f', paddingVertical: 14, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
 });

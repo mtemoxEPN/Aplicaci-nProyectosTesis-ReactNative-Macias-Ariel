@@ -5,6 +5,19 @@ import { useRouter } from 'expo-router';
 import { proyectoApi } from '@entities/proyecto-tesis/api/proyectoApi';
 import { Colors, getEstadoColor } from '@shared/ui/Colors';
 
+// =====================================================================
+// 🎨 [ANIMATION-03] IMPORTACIÓN DE COMPONENTES REANIMADOS
+// =====================================================================
+// =====================================================================
+// 🌟 [EXTRA-08] IMPORTAMOS TODAS LAS ANIMACIONES NECESARIAS PARA LA TARJETA
+// =====================================================================
+import Animated, { FadeInDown, FadeOutUp, CurvedTransition, Easing } from 'react-native-reanimated';
+
+
+
+// Se crea una versión animada del TouchableOpacity para no perder la función de botón
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+
 interface Props {
   proyecto: ProyectoTesis;
   // Prop para avisar al componente padre que la eliminación fue exitosa
@@ -45,7 +58,28 @@ export function ProyectoCard({ proyecto, onDeleteSuccess }: Props) {
   };
 
   return (
-    <TouchableOpacity style={styles.tarjeta} onPress={irAlDetalle} activeOpacity={0.7} disabled={eliminando}>
+    // =====================================================================
+    // 🎨 [ANIMATION-04] APLICACIÓN DE ENTERING ANIMATION Y UNIWIND
+    // Se utiliza FadeInDown con configuración de resortes (springify) para un efecto fluido.
+    // También se inyecta className="mb-3" de Uniwind para demostrar su integración.
+    // =====================================================================
+    <AnimatedTouchableOpacity 
+      entering={FadeInDown.duration(400).springify().damping(50)}
+      // =====================================================================
+      // 🌟 [EXTRA-02] APLICAR TRANSICIÓN DE LAYOUT
+      // Cuando la lista cambie (al buscar o eliminar), las tarjetas se
+      // reacomodarán con una física de resorte (springify) muy natural.
+      // =====================================================================
+      // 2. Cómo desaparece cuando no coincide con la búsqueda o se elimina
+      exiting={FadeOutUp.duration(500)}
+      // 3. Cómo se reacomoda (curva) cuando sus "vecinas" desaparecen
+      layout={CurvedTransition.duration(500).easingX(Easing.inOut(Easing.ease)).easingY(Easing.inOut(Easing.ease))}
+      className="mb-3"
+      style={styles.tarjeta} 
+      onPress={irAlDetalle} 
+      activeOpacity={0.7} 
+      disabled={eliminando}
+    >
       <View style={styles.encabezado}>
         <Text style={styles.titulo} numberOfLines={2}>{proyecto.titulo}</Text>
         <View style={[styles.badge, { backgroundColor: getEstadoColor(proyecto.estado) }]}>
@@ -86,7 +120,7 @@ export function ProyectoCard({ proyecto, onDeleteSuccess }: Props) {
           : <Text style={styles.botonEliminarTexto}>Eliminar registro</Text>
         }
       </TouchableOpacity>
-    </TouchableOpacity>
+    </AnimatedTouchableOpacity>
   );
 }
 
